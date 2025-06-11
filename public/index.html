@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Camera Frame Placeholder</title>
+  <style>
+    body {
+      font-family: Arial;
+      background: #f8f8f8;
+      text-align: center;
+      padding: 40px;
+    }
+
+    #camera {
+      width: 80%;
+      max-width: 600px;
+      height: 400px; /* Placeholder height */
+      border: 4px dashed #aaa;
+      border-radius: 10px;
+      background-color: #000; /* Black background for camera feed */
+      object-fit: cover;
+    }
+
+    .loading-text {
+      margin-top: 10px;
+      color: #555;
+      font-style: italic;
+    }
+  </style>
+  
+</head>
+<body>
+  <h1>Live Camera Feed</h1>
+  <video id="camera" autoplay playsinline></video>
+  <p class="loading-text">Waiting for camera permission...</p>
+
+  <!-- <script>
+    const video = document.getElementById('camera');
+    const loadingText = document.querySelector('.loading-text');
+
+    // Ask for camera access
+    navigator.mediaDevices.getUserMedia({ video: true, audio: false })
+      .then(stream => {
+        video.srcObject = stream;
+        loadingText.textContent = "Camera feed is live!";
+      })
+      .catch(err => {
+        console.error('Camera access error:', err);
+        loadingText.textContent = "Failed to access camera.";
+      });
+  </script> -->
+</body>
+<script src="./js/main.js"></script>
+</html>
