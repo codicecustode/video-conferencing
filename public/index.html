@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Camera Frame Placeholder</title>
   <style>
     body {
@@ -12,13 +13,14 @@
       padding: 40px;
     }
 
-    #camera {
+    #localVideo,
+    #remoteVideo {
       width: 80%;
       max-width: 600px;
-      height: 400px; /* Placeholder height */
+      height: 400px;
       border: 4px dashed #aaa;
       border-radius: 10px;
-      background-color: #000; /* Black background for camera feed */
+      background-color: #000;
       object-fit: cover;
     }
 
@@ -27,29 +29,74 @@
       color: #555;
       font-style: italic;
     }
+
+    
+    #targetSocketId {
+      margin: 20px auto;
+      padding: 12px 16px;
+      width: 60%;
+      max-width: 400px;
+      font-size: 16px;
+      border: 2px solid #ccc;
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    #targetSocketId:focus {
+      outline: none;
+      border-color: #007BFF;
+      box-shadow: 0 0 8px rgba(0, 123, 255, 0.3);
+    }
+
+    /* 🎨 Stylish Call button */
+    #callBtn {
+      padding: 12px 24px;
+      font-size: 16px;
+      border: none;
+      background-color: #28a745;
+      color: white;
+      border-radius: 10px;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+
+    #callBtn:hover {
+      background-color: #218838;
+      transform: scale(1.03);
+    }
+
+    #callBtn:active {
+      background-color: #1e7e34;
+      transform: scale(0.98);
+    }
   </style>
-  
 </head>
+
 <body>
-  <h1>Live Camera Feed</h1>
-  <video id="camera" autoplay playsinline></video>
-  <p class="loading-text">Waiting for camera permission...</p>
 
-  <!-- <script>
-    const video = document.getElementById('camera');
-    const loadingText = document.querySelector('.loading-text');
+  <main>
 
-    // Ask for camera access
-    navigator.mediaDevices.getUserMedia({ video: true, audio: false })
-      .then(stream => {
-        video.srcObject = stream;
-        loadingText.textContent = "Camera feed is live!";
-      })
-      .catch(err => {
-        console.error('Camera access error:', err);
-        loadingText.textContent = "Failed to access camera.";
-      });
-  </script> -->
+    <video id="localVideo" autoplay muted></video>
+    <video id="remoteVideo" autoplay></video>
+
+    <div class="loading-text">Loading...</div>
+
+    
+    <input id="targetSocketId" placeholder="Enter Socket ID to Call" />
+
+    <br>
+
+    
+    <button id="callBtn">Call</button>
+
+  </main>
+
 </body>
+
+
+<script src="./js/socket.io.js"></script>
 <script src="./js/main.js"></script>
+
 </html>
