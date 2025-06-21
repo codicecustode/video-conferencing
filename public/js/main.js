@@ -12,13 +12,25 @@ let localStream;
 let remoteStream;
 let myPC;
 
+let localSocketId = socket.id;
+let peerSocketId = null;
+
+let isYouCaller = false
+
+socket.on('connect', () => {
+  localSocketId = socket.id;
+  console.log("My socket ID:", localSocketId);
+});
+
 const createPeerConnection = async () => {
   if (myPC) {
     return myPC
   }
+
   const configuration = { 'iceServers': [{ 'urls': 'stun:stun.l.google.com:19302' }] }
   const pc = new RTCPeerConnection(configuration);
-  pc.ontrack = (event) => {
+  myPC = pc
+  myPC.ontrack = (event) => {
 
     console.log("📹 Received remote track:", event.streams);
     if (remoteVideo.srcObject !== event.streams[0]) {
@@ -28,11 +40,16 @@ const createPeerConnection = async () => {
       };
     }
   }
-  pc.onicecandidate = (event) => {
+
+  myPC.oniceconnectionstatechange = (ev) => {
+    console.log("ICE Connection State changed to:", pc.iceConnectionState)
+  };
+
+  myPC.onicecandidate = (event) => {
     if (event.candidate) {
       socket.emit('ice-candidate', {
-        from: socket.id,
-        to: targetSocketId.value,
+        from: localSocketId,
+        to: peerSocketId,
         candidate: event.candidate
       });
     }
@@ -44,12 +61,9 @@ const createPeerConnection = async () => {
   localVideo.play()
 
   localStream.getTracks().forEach((track) => {
-    pc.addTrack(track, localStream); 
+    myPC.addTrack(track, localStream);
   });
-
-  myPC = pc
-
-  return pc
+  return myPC
 }
 
 
@@ -62,8 +76,8 @@ const makeOffer = async () => {
   await myPC.setLocalDescription(offer)
 
   socket.emit('offer', {
-    from: socket.id,
-    to: targetSocketId.value,
+    from: localSocketId,
+    to: peerSocketId,
     offer: offer
   });
 
@@ -74,6 +88,10 @@ socket.on('offer', async (data) => {
 
   myPC = await createPeerConnection()
 
+  if (!isYouCaller) {
+    peerSocketId = data.from;
+  }
+
 
   await myPC.setRemoteDescription(new RTCSessionDescription(data.offer))
 
@@ -83,8 +101,8 @@ socket.on('offer', async (data) => {
   console.log("answer is----->", answer)
 
   socket.emit('answer', {
-    from: socket.id,
-    to: data.from,
+    from: localSocketId,
+    to: peerSocketId,
     answer
   })
 
@@ -124,6 +142,7 @@ socket.on('ice-candidate', async (data) => {
 
 
 callBtn.addEventListener('click', async () => {
-  console.log("calling")
+  isYouCaller = true;
+  peerSocketId = targetSocketId.value
   makeOffer()
 })
