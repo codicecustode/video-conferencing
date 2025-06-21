@@ -27,7 +27,16 @@ const createPeerConnection = async () => {
     return myPC
   }
 
-  const configuration = { 'iceServers': [{ 'urls': 'stun:stun.l.google.com:19302' }] }
+  const configuration = {
+  iceServers: [
+    { urls: 'stun:stun.l.google.com:19302' }, 
+    {
+      urls: 'turn:openrelay.metered.ca:80',
+      username: 'openrelayproject',
+      credential: 'openrelayproject'
+    }
+  ]
+};
   const pc = new RTCPeerConnection(configuration);
   myPC = pc
   myPC.ontrack = (event) => {
