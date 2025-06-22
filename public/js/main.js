@@ -7,6 +7,7 @@ const remoteVideo = document.getElementById('remoteVideo');
 const status = document.getElementById('status');
 const callBtn = document.getElementById('callBtn');
 const targetSocketId = document.getElementById('targetSocketId');
+const mySocketId = document.getElementById('socketId');
 
 let localStream;
 let remoteStream;
@@ -19,6 +20,7 @@ let isYouCaller = false
 
 socket.on('connect', () => {
   localSocketId = socket.id;
+  mySocketId.textContent = localSocketId;
   console.log("My socket ID:", localSocketId);
 });
 
