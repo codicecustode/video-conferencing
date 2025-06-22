@@ -70,15 +70,29 @@ const createPeerConnection = async () => {
       });
     }
   };
-  //Ask for camera access
-  localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false })
+  try {
+    //Ask for camera access
+    localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false })
 
-  localVideo.srcObject = localStream
-  localVideo.play()
+    localVideo.srcObject = localStream
+    localVideo.play()
 
-  localStream.getTracks().forEach((track) => {
-    myPC.addTrack(track, localStream);
-  });
+    localStream.getTracks().forEach((track) => {
+      myPC.addTrack(track, localStream);
+    });
+  } catch (err) {
+    console.error("Media access failed:", err);
+
+    if (err.name === 'NotAllowedError') {
+      alert("⚠️ Camera and microphone access was denied. Please allow permissions and try again.");
+    } else if (err.name === 'NotFoundError') {
+      alert("❌ No camera or microphone found on this device.");
+    } else if (err.name === 'NotReadableError') {
+      alert("🛑 Camera/mic is already in use by another app.");
+    } else {
+      alert("🚫 Unable to access camera/mic. Please check your settings and try again.");
+    }
+  }
   return myPC
 }
 
