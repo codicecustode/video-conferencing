@@ -28,15 +28,20 @@ const createPeerConnection = async () => {
   }
 
   const configuration = {
-  iceServers: [
-    { urls: 'stun:stun.l.google.com:19302' }, 
-    {
-      urls: 'turn:openrelay.metered.ca:80',
-      username: 'openrelayproject',
-      credential: 'openrelayproject'
-    }
-  ]
-};
+    iceServers: [
+      { urls: 'stun:stun.l.google.com:19302' },
+      {
+        urls: 'turn:openrelay.metered.ca:80',
+        username: 'openrelayproject',
+        credential: 'openrelayproject'
+      },
+      {
+        urls: 'turn:34.61.244.182:3478?transport=udp',
+        username: 'testuser',
+        credential: 'testpass'
+      }
+    ]
+  };
   const pc = new RTCPeerConnection(configuration);
   myPC = pc
   myPC.ontrack = (event) => {
