@@ -54,6 +54,7 @@ io.on('connection', (socket) => {
   socket.on('disconnect', (data) => {
     console.log("Disconnection Request Received.")
     console.log("Disconnection Request data", data)
+    io.emit('socket-list', Array.from(io.sockets.sockets.keys()))
   })
 
 });
