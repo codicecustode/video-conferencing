@@ -7,7 +7,8 @@ const remoteVideo = document.getElementById('remoteVideo');
 const status = document.getElementById('status');
 const callBtn = document.getElementById('callBtn');
 const targetSocketId = document.getElementById('targetSocketId');
-const mySocketId = document.getElementById('socketId');
+//const mySocketId = document.getElementById('socketList');
+const socketListEle = document.getElementById('socketList');
 
 let localStream;
 let remoteStream;
@@ -23,6 +24,13 @@ socket.on('connect', () => {
   mySocketId.textContent = localSocketId;
   console.log("My socket ID:", localSocketId);
 });
+
+const addSocketIdToSidebar = (id, isYou) => {
+  console.log("isYou", isYou)
+  const li = document.createElement('li')
+  li.innerHTML = isYou ? `<span>YOU</span>(${id})` : id;
+  socketListEle.appendChild(li)
+}
 
 const createPeerConnection = async () => {
   if (myPC) {
@@ -167,7 +175,14 @@ socket.on('ice-candidate', async (data) => {
 
 
 
-
+socket.on('socket-list', (socketIds) => {
+  console.log('Received socket list:', socketIds);
+  //socketListEle.innerHTML = ''
+  socketIds.forEach((id) => {
+    console.log("hh")
+    addSocketIdToSidebar(id, id === socket.id)
+  })
+})
 
 
 
