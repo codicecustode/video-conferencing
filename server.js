@@ -18,7 +18,7 @@ app.get('/', (req, res) => {
 
 io.on('connection', (socket) => {
 
-  io.emit('socket-list', io.sockets.sockets.keys())
+  io.emit('socket-list', Array.from(io.sockets.sockets.keys()))
 
   console.log("A user is connected with socket ID ---->", socket.id)
 
