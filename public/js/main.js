@@ -204,6 +204,8 @@ socket.on('socket-list', (socketIds) => {
 callBtn.addEventListener('click', async () => {
   isYouCaller = true;
   peerSocketId = targetSocketId.value
+  endCallBtn.style.display = 'inline-block'
+  callBtn.style.display = 'none'
   makeOffer()
 })
 
