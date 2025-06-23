@@ -177,7 +177,7 @@ socket.on('ice-candidate', async (data) => {
 
 socket.on('socket-list', (socketIds) => {
   console.log('Received socket list:', socketIds);
-  //socketListEle.innerHTML = ''
+  socketListEle.innerHTML = ''
   socketIds.forEach((id) => {
     console.log("hh")
     addSocketIdToSidebar(id, id === socket.id)
