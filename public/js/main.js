@@ -7,7 +7,7 @@ const remoteVideo = document.getElementById('remoteVideo');
 const status = document.getElementById('status');
 const callBtn = document.getElementById('callBtn');
 const targetSocketId = document.getElementById('targetSocketId');
-//const mySocketId = document.getElementById('socketList');
+const endCallBtn = document.getElementById('endCallBtn');
 const socketListEle = document.getElementById('socketList');
 
 let localStream;
@@ -30,6 +30,21 @@ const addSocketIdToSidebar = (id, isYou) => {
   const li = document.createElement('li')
   li.innerHTML = isYou ? `<span>YOU</span>(${id})` : id;
   socketListEle.appendChild(li)
+}
+
+const disconnectCall = async () => {
+  if (localStream) {
+    localStream.getTracks().forEach(track => track.stop())
+    localStream = null;
+  }
+
+  if (myPC) {
+    myPC.close();
+    myPC = null;
+  }
+
+  remoteVideo.srcObject = null;
+  localVideo.srcObject = null;
 }
 
 const createPeerConnection = async () => {
@@ -190,4 +205,16 @@ callBtn.addEventListener('click', async () => {
   isYouCaller = true;
   peerSocketId = targetSocketId.value
   makeOffer()
+})
+
+endCallBtn.addEventListener('click', async () => {
+  endCallBtn.style.display = 'none';
+  callBtn.style.display = 'inline-block'
+  disconnectCall();
+  //notify the other end that call has beed disconnected
+  socket.emit('hang-up', {
+    from: localSocketId,
+    to: peerSocketId
+  })
+
 })
