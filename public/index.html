@@ -62,6 +62,19 @@
       transition: background-color 0.3s ease, transform 0.2s ease;
     }
 
+    #endCallBtn {
+      display: none;
+      padding: 12px 24px;
+      font-size: 16px;
+      border: none;
+      background-color: #e00e0e;
+      color: white;
+      border-radius: 10px;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+
     #callBtn:hover {
       background-color: #218838;
       transform: scale(1.03);
@@ -90,6 +103,7 @@
     #sidebar h3 {
       margin-top: 0;
       font-size: 18px;
+      border-bottom: 2px solid #ddd;
       color: #333;
       text-align: center;
     }
@@ -102,7 +116,7 @@
 
     #socketList li {
       padding: 6px 10px;
-      border-bottom: 1px solid #eee;
+      border-bottom: 2px solid #eee;
       font-size: 14px;
       color: #444;
       word-break: break-word;
@@ -144,7 +158,7 @@
     </ul>
   </aside>
 
-  <!-- Main Content -->
+
   <main>
 
 
@@ -156,6 +170,7 @@
     <input id="targetSocketId" placeholder="Enter Socket ID to Call" />
     <br>
     <button id="callBtn">Call</button>
+    <button id="endCallBtn">End Call</button>
   </main>
 </body>
 
