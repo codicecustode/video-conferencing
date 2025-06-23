@@ -72,7 +72,7 @@ const createPeerConnection = async () => {
   };
   try {
     //Ask for camera access
-    localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false })
+    localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true })
 
     localVideo.srcObject = localStream
     localVideo.play()
