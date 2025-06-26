@@ -9,6 +9,7 @@ const callBtn = document.getElementById('callBtn');
 const targetSocketId = document.getElementById('targetSocketId');
 const endCallBtn = document.getElementById('endCallBtn');
 const socketListEle = document.getElementById('socketList');
+const videoContainer = document.getElementById("videoContainer")
 
 let localStream;
 let remoteStream;
@@ -102,16 +103,17 @@ const createPeerConnection = async () => {
       alert("🚫 Unable to access camera/mic. Please check your settings and try again.");
     }
   }
+
   myPC.onconnectionstatechange = (event) => {
-    console.log("here is the the connection state---->", event)
-    if (isConnected) {
-      localVideo.classList.add('call-active')
-      remoteVideo.classListadd('call-active')
+    console.log("here is the connection state ---->", myPC.connectionState);
+    if (myPC.connectionState === "connected") {
+      console.log("adding the class");
+      videoContainer.classList.add('call-active');
     }
-  }
+  };
 
   myPC.oniceconnectionstatechange = (ev) => {
-    console.log("ICE Connection State changed to:", pc.iceConnectionState)
+    console.log("ICE Connection State changed to:", myPC.iceConnectionState)
   };
 
   myPC.onicecandidate = (event) => {
