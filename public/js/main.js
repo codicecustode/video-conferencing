@@ -21,12 +21,10 @@ let isYouCaller = false
 
 socket.on('connect', () => {
   localSocketId = socket.id;
-  mySocketId.textContent = localSocketId;
-  console.log("My socket ID:", localSocketId);
+  //mySocketId.textContent = localSocketId;
 });
 
 const addSocketIdToSidebar = (id, isYou) => {
-  console.log("isYou", isYou)
   const li = document.createElement('li')
   li.innerHTML = isYou ? `<span>YOU</span>(${id})` : id;
   socketListEle.appendChild(li)
@@ -67,8 +65,8 @@ const createPeerConnection = async () => {
       }
     ]
   };
-  const pc = new RTCPeerConnection(configuration);
-  myPC = pc
+  myPC = new RTCPeerConnection(configuration);
+
   myPC.ontrack = (event) => {
 
     console.log("📹 Received remote track:", event.streams);
@@ -80,19 +78,7 @@ const createPeerConnection = async () => {
     }
   }
 
-  myPC.oniceconnectionstatechange = (ev) => {
-    console.log("ICE Connection State changed to:", pc.iceConnectionState)
-  };
 
-  myPC.onicecandidate = (event) => {
-    if (event.candidate) {
-      socket.emit('ice-candidate', {
-        from: localSocketId,
-        to: peerSocketId,
-        candidate: event.candidate
-      });
-    }
-  };
   try {
     //Ask for camera access
     localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false })
@@ -116,13 +102,33 @@ const createPeerConnection = async () => {
       alert("🚫 Unable to access camera/mic. Please check your settings and try again.");
     }
   }
+  myPC.onconnectionstatechange = (event) => {
+    console.log("here is the the connection state---->", event)
+    if (isConnected) {
+      localVideo.classList.add('call-active')
+      remoteVideo.classListadd('call-active')
+    }
+  }
+
+  myPC.oniceconnectionstatechange = (ev) => {
+    console.log("ICE Connection State changed to:", pc.iceConnectionState)
+  };
+
+  myPC.onicecandidate = (event) => {
+    if (event.candidate) {
+      socket.emit('ice-candidate', {
+        from: localSocketId,
+        to: peerSocketId,
+        candidate: event.candidate
+      });
+    }
+  };
   return myPC
 }
 
 
 const makeOffer = async () => {
   console.log("creating offer")
-  //myPC = myPeerConnection
   myPC = await createPeerConnection()
 
   const offer = await myPC.createOffer()
@@ -145,7 +151,6 @@ socket.on('offer', async (data) => {
     peerSocketId = data.from;
   }
 
-
   await myPC.setRemoteDescription(new RTCSessionDescription(data.offer))
 
   const answer = await myPC.createAnswer()
@@ -162,13 +167,10 @@ socket.on('offer', async (data) => {
 })
 
 socket.on('answer', async (data) => {
-  console.log('a', data.answer)
   if (!data.answer || !data.answer.type || !data.answer.sdp) {
     console.error("Invalid answer received:", data.answer);
     return;
   }
-
-
   await myPC.setRemoteDescription(new RTCSessionDescription(data.answer))
 })
 
@@ -194,9 +196,14 @@ socket.on('socket-list', (socketIds) => {
   console.log('Received socket list:', socketIds);
   socketListEle.innerHTML = ''
   socketIds.forEach((id) => {
-    console.log("hh")
     addSocketIdToSidebar(id, id === socket.id)
   })
+})
+
+socket.on('hang-up', (data) => {
+  endCallBtn.style.display = 'none';
+  callBtn.style.display = 'inline-block'
+  alert(data.msg)
 })
 
 
@@ -220,3 +227,6 @@ endCallBtn.addEventListener('click', async () => {
   })
 
 })
+
+
+
