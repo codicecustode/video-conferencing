@@ -18,6 +18,8 @@ app.get('/', (req, res) => {
 
 io.on('connection', (socket) => {
 
+  io.emit('socket-list', Array.from(io.sockets.sockets.keys()))
+
   console.log("A user is connected with socket ID ---->", socket.id)
 
   socket.on('offer', (data) => {
@@ -48,9 +50,11 @@ io.on('connection', (socket) => {
 
 
 
+
   socket.on('disconnect', (data) => {
     console.log("Disconnection Request Received.")
     console.log("Disconnection Request data", data)
+    io.emit('socket-list', Array.from(io.sockets.sockets.keys()))
   })
 
 });

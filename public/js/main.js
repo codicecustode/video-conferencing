@@ -7,7 +7,9 @@ const remoteVideo = document.getElementById('remoteVideo');
 const status = document.getElementById('status');
 const callBtn = document.getElementById('callBtn');
 const targetSocketId = document.getElementById('targetSocketId');
-const mySocketId = document.getElementById('socketId');
+const endCallBtn = document.getElementById('endCallBtn');
+const socketListEle = document.getElementById('socketList');
+const videoContainer = document.getElementById("videoContainer")
 
 let localStream;
 let remoteStream;
@@ -20,9 +22,29 @@ let isYouCaller = false
 
 socket.on('connect', () => {
   localSocketId = socket.id;
-  mySocketId.textContent = localSocketId;
-  console.log("My socket ID:", localSocketId);
+  //mySocketId.textContent = localSocketId;
 });
+
+const addSocketIdToSidebar = (id, isYou) => {
+  const li = document.createElement('li')
+  li.innerHTML = isYou ? `<span>YOU</span>(${id})` : id;
+  socketListEle.appendChild(li)
+}
+
+const disconnectCall = async () => {
+  if (localStream) {
+    localStream.getTracks().forEach(track => track.stop())
+    localStream = null;
+  }
+
+  if (myPC) {
+    myPC.close();
+    myPC = null;
+  }
+
+  remoteVideo.srcObject = null;
+  localVideo.srcObject = null;
+}
 
 const createPeerConnection = async () => {
   if (myPC) {
@@ -44,8 +66,8 @@ const createPeerConnection = async () => {
       }
     ]
   };
-  const pc = new RTCPeerConnection(configuration);
-  myPC = pc
+  myPC = new RTCPeerConnection(configuration);
+
   myPC.ontrack = (event) => {
 
     console.log("📹 Received remote track:", event.streams);
@@ -57,19 +79,7 @@ const createPeerConnection = async () => {
     }
   }
 
-  myPC.oniceconnectionstatechange = (ev) => {
-    console.log("ICE Connection State changed to:", pc.iceConnectionState)
-  };
 
-  myPC.onicecandidate = (event) => {
-    if (event.candidate) {
-      socket.emit('ice-candidate', {
-        from: localSocketId,
-        to: peerSocketId,
-        candidate: event.candidate
-      });
-    }
-  };
   try {
     //Ask for camera access
     localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true })
@@ -93,13 +103,34 @@ const createPeerConnection = async () => {
       alert("🚫 Unable to access camera/mic. Please check your settings and try again.");
     }
   }
+
+  myPC.onconnectionstatechange = (event) => {
+    console.log("here is the connection state ---->", myPC.connectionState);
+    if (myPC.connectionState === "connected") {
+      console.log("adding the class");
+      videoContainer.classList.add('call-active');
+    }
+  };
+
+  myPC.oniceconnectionstatechange = (ev) => {
+    console.log("ICE Connection State changed to:", myPC.iceConnectionState)
+  };
+
+  myPC.onicecandidate = (event) => {
+    if (event.candidate) {
+      socket.emit('ice-candidate', {
+        from: localSocketId,
+        to: peerSocketId,
+        candidate: event.candidate
+      });
+    }
+  };
   return myPC
 }
 
 
 const makeOffer = async () => {
   console.log("creating offer")
-  //myPC = myPeerConnection
   myPC = await createPeerConnection()
 
   const offer = await myPC.createOffer()
@@ -122,7 +153,6 @@ socket.on('offer', async (data) => {
     peerSocketId = data.from;
   }
 
-
   await myPC.setRemoteDescription(new RTCSessionDescription(data.offer))
 
   const answer = await myPC.createAnswer()
@@ -139,13 +169,10 @@ socket.on('offer', async (data) => {
 })
 
 socket.on('answer', async (data) => {
-  console.log('a', data.answer)
   if (!data.answer || !data.answer.type || !data.answer.sdp) {
     console.error("Invalid answer received:", data.answer);
     return;
   }
-
-
   await myPC.setRemoteDescription(new RTCSessionDescription(data.answer))
 })
 
@@ -167,12 +194,41 @@ socket.on('ice-candidate', async (data) => {
 
 
 
+socket.on('socket-list', (socketIds) => {
+  console.log('Received socket list:', socketIds);
+  socketListEle.innerHTML = ''
+  socketIds.forEach((id) => {
+    addSocketIdToSidebar(id, id === socket.id)
+  })
+})
 
+socket.on('hang-up', (data) => {
+  endCallBtn.style.display = 'none';
+  callBtn.style.display = 'inline-block'
+  alert(data.msg)
+})
 
 
 
 callBtn.addEventListener('click', async () => {
   isYouCaller = true;
   peerSocketId = targetSocketId.value
+  endCallBtn.style.display = 'inline-block'
+  callBtn.style.display = 'none'
   makeOffer()
 })
+
+endCallBtn.addEventListener('click', async () => {
+  endCallBtn.style.display = 'none';
+  callBtn.style.display = 'inline-block'
+  disconnectCall();
+  //notify the other end that call has beed disconnected
+  socket.emit('hang-up', {
+    from: localSocketId,
+    to: peerSocketId
+  })
+
+})
+
+
+
