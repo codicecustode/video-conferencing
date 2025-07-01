@@ -48,6 +48,13 @@ io.on('connection', (socket) => {
     })
   })
 
+  socket.on('hang-up', (data) => {
+    io.to(data.to).emit({
+      from: data.to,
+      msg: "call disconnected"
+    })
+  })
+
 
 
 
