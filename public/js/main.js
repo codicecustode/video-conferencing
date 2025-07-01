@@ -15,6 +15,8 @@ let localStream;
 let remoteStream;
 let myPC;
 
+let bigVideoFrame = null;
+
 let localSocketId = socket.id;
 let peerSocketId = null;
 
@@ -22,6 +24,7 @@ let isYouCaller = false
 
 socket.on('connect', () => {
   localSocketId = socket.id;
+  bigVideoFrame = 'remote';
   //mySocketId.textContent = localSocketId;
 });
 
@@ -230,5 +233,24 @@ endCallBtn.addEventListener('click', async () => {
 
 })
 
+localVideo.addEventListener('click', async () => {
+  if (bigVideoFrame === 'local') {
+    //do nothing
+  } else {
+    //swap
+    videoContainer.classList.toggle('toggle-swapped')
+    bigVideoFrame = 'local'
+  }
 
+})
+
+remoteVideo.addEventListener('click', async () => {
+  if (bigVideoFrame === 'remote') {
+    //do nothing
+  } else {
+    //swap
+    videoContainer.classList.toggle('toggle-swapped')
+    bigVideoFrame = 'remote'
+  }
+})
 
