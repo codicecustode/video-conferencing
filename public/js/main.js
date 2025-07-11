@@ -9,7 +9,10 @@ const callBtn = document.getElementById('callBtn');
 const targetSocketId = document.getElementById('targetSocketId');
 const endCallBtn = document.getElementById('endCallBtn');
 const socketListEle = document.getElementById('socketList');
-const videoContainer = document.getElementById("videoContainer")
+const videoContainer = document.getElementById("videoContainer");
+const toggleAudio = document.getElementById("toggle-audio")
+const toggleVideo = document.getElementById("toggle-video")
+
 
 let localStream;
 let remoteStream;
@@ -20,7 +23,10 @@ let bigVideoFrame = null;
 let localSocketId = socket.id;
 let peerSocketId = null;
 
-let isYouCaller = false
+let isYouCaller = false;
+
+let isAudioMuted = false;
+let isVideoMuted = false;
 
 socket.on('connect', () => {
   localSocketId = socket.id;
@@ -254,3 +260,20 @@ remoteVideo.addEventListener('click', async () => {
   }
 })
 
+
+toggleAudio.addEventListener('click', async () => {
+  isAudioMuted = !isAudioMuted
+  const icon = document.getElementById("audio-icon");
+  icon.className = isAudioMuted ? "fas fa-microphone-slash" : "fas fa-microphone";
+  const audioTrack = localStream.getAudioTracks()[0];
+  audioTrack.enabled = !audioTrack.enabled
+})
+
+toggleVideo.addEventListener('click', async () => {
+  isVideoMuted = !isVideoMuted;
+  const icon = document.getElementById("video-icon");
+  icon.className = isVideoMuted ? "fas fa-video-slash" : "fas fa-video";
+  const videoTrack = localStream.getVideoTracks()[0];
+  videoTrack.enabled = !videoTrack.enabled
+
+})
