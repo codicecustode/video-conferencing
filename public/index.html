@@ -5,6 +5,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Camera Frame Placeholder</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
   <style>
     body {
       font-family: Arial;
@@ -187,7 +189,7 @@
       border: 3px solid #28a745;
       cursor: pointer;
       box-shadow: 0 0 10px rgba(40, 167, 69, 0.5);
-      
+
     }
 
     .call-active.toggle-swapped #localVideo {
@@ -198,6 +200,17 @@
       z-index: 1;
       border: 4px solid #007bff;
       box-shadow: 0 0 20px rgba(0, 123, 255, 0.4);
+    }
+
+    .controls {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+    }
+
+    #toggle-audio,
+    #toggle-video {
+      cursor:pointer;
     }
   </style>
 </head>
@@ -217,6 +230,15 @@
     <div id="videoContainer">
       <video id="localVideo" autoplay></video>
       <video id="remoteVideo" autoplay></video>
+      <div class="controls">
+        <button id="toggle-audio">
+          <i class="fas fa-microphone" id="audio-icon"></i>
+        </button>
+        <button id="toggle-video">
+          <i class="fas fa-video" id="video-icon"></i>
+        </button>
+      </div>
+
     </div>
 
 
