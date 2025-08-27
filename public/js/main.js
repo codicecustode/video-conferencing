@@ -55,6 +55,31 @@ const disconnectCall = async () => {
   localVideo.srcObject = null;
 }
 
+window.onload = async () => {
+  try {
+    //Ask for camera access
+
+    localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+    localVideo.srcObject = localStream
+    localVideo.play()
+
+
+
+  } catch (err) {
+    console.error("Media access failed:", err);
+
+    if (err.name === 'NotAllowedError') {
+      alert("⚠️ Camera and microphone access was denied. Please allow permissions and try again.");
+    } else if (err.name === 'NotFoundError') {
+      alert("❌ No camera or microphone found on this device.");
+    } else if (err.name === 'NotReadableError') {
+      alert("🛑 Camera/mic is already in use by another app.");
+    } else {
+      alert("🚫 Unable to access camera/mic. Please check your settings and try again.");
+    }
+  }
+}
+
 const createPeerConnection = async () => {
   if (myPC) {
     return myPC
@@ -77,6 +102,10 @@ const createPeerConnection = async () => {
   };
   myPC = new RTCPeerConnection(configuration);
 
+  localStream.getTracks().forEach((track) => {
+    myPC.addTrack(track, localStream);
+  });
+
   myPC.ontrack = (event) => {
 
     console.log("📹 Received remote track:", event.streams);
@@ -89,29 +118,6 @@ const createPeerConnection = async () => {
   }
 
 
-  try {
-    //Ask for camera access
-    localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true })
-
-    localVideo.srcObject = localStream
-    localVideo.play()
-
-    localStream.getTracks().forEach((track) => {
-      myPC.addTrack(track, localStream);
-    });
-  } catch (err) {
-    console.error("Media access failed:", err);
-
-    if (err.name === 'NotAllowedError') {
-      alert("⚠️ Camera and microphone access was denied. Please allow permissions and try again.");
-    } else if (err.name === 'NotFoundError') {
-      alert("❌ No camera or microphone found on this device.");
-    } else if (err.name === 'NotReadableError') {
-      alert("🛑 Camera/mic is already in use by another app.");
-    } else {
-      alert("🚫 Unable to access camera/mic. Please check your settings and try again.");
-    }
-  }
 
   myPC.onconnectionstatechange = (event) => {
     console.log("here is the connection state ---->", myPC.connectionState);
@@ -219,7 +225,12 @@ socket.on('hang-up', (data) => {
 
 
 
-callBtn.addEventListener('click', async () => {
+callBtn.addEventListener('click', async (e) => {
+  const inputValue = document.getElementById('targetSocketId').value.trim()
+  if (inputValue === "") {
+    alert('Please enter the socket id for calling.')
+    return
+  }
   isYouCaller = true;
   peerSocketId = targetSocketId.value
   endCallBtn.style.display = 'inline-block'
