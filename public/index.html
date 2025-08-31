@@ -23,11 +23,7 @@
       object-fit: cover;
     }
 
-    .loading-text {
-      margin-top: 10px;
-      color: #555;
-      font-style: italic;
-    }
+
 
 
     #targetSocketId {
@@ -210,7 +206,7 @@
 
     #toggle-audio,
     #toggle-video {
-      cursor:pointer;
+      cursor: pointer;
     }
   </style>
 </head>
@@ -232,19 +228,19 @@
       <video id="remoteVideo" autoplay></video>
       <div class="controls">
         <button id="toggle-audio">
-          <i class="fas fa-microphone" id="audio-icon"></i>
+          <i class="fas fa-microphone-slash" id="audio-icon"></i>
         </button>
         <button id="toggle-video">
-          <i class="fas fa-video" id="video-icon"></i>
+          <i class="fas fa-video-slash" id="video-icon"></i>
         </button>
       </div>
 
     </div>
 
 
-    <div class="loading-text">Loading...</div>
 
-    <input id="targetSocketId" placeholder="Enter Socket ID to Call" />
+    <div><input id="targetSocketId" placeholder="Enter Socket ID to Call" /></div>
+
     <br>
     <button id="callBtn">Call</button>
     <button id="endCallBtn">End Call</button>
