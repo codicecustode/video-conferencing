@@ -13,6 +13,8 @@ const videoContainer = document.getElementById("videoContainer");
 const toggleAudio = document.getElementById("toggle-audio")
 const toggleVideo = document.getElementById("toggle-video")
 
+const audIcon = document.getElementById("audio-icon");
+const vidIcon = document.getElementById("video-icon");
 
 let localStream;
 let remoteStream;
@@ -55,9 +57,31 @@ const disconnectCall = async () => {
   localVideo.srcObject = null;
 }
 
+async function watchPermission(name, callback) {
+  try {
+    const permissionStatus = await navigator.permissions.query({ name });
+
+    // Initial status
+    callback(permissionStatus.state);
+
+    // Listen for changes
+    permissionStatus.onchange = () => {
+      callback(permissionStatus.state);
+    };
+  } catch (err) {
+    console.error("Permission API not supported for:", name, err);
+  }
+}
+
 window.onload = async () => {
   try {
-    //Ask for camera access
+
+    watchPermission("camera",updateCameraIcon);
+
+    watchPermission("microphone", (state) => {
+      console.log("Mic permission:", state);
+      updateMicIcon(state);
+    });
 
     localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true })
     localVideo.srcObject = localStream
@@ -274,17 +298,34 @@ remoteVideo.addEventListener('click', async () => {
 
 toggleAudio.addEventListener('click', async () => {
   isAudioMuted = !isAudioMuted
-  const icon = document.getElementById("audio-icon");
-  icon.className = isAudioMuted ? "fas fa-microphone-slash" : "fas fa-microphone";
+
+  audIcon.className = isAudioMuted ? "fas fa-microphone-slash" : "fas fa-microphone";
   const audioTrack = localStream.getAudioTracks()[0];
   audioTrack.enabled = !audioTrack.enabled
 })
 
 toggleVideo.addEventListener('click', async () => {
   isVideoMuted = !isVideoMuted;
-  const icon = document.getElementById("video-icon");
-  icon.className = isVideoMuted ? "fas fa-video-slash" : "fas fa-video";
+
+  vidIcon.className = isVideoMuted ? "fas fa-video-slash" : "fas fa-video";
   const videoTrack = localStream.getVideoTracks()[0];
   videoTrack.enabled = !videoTrack.enabled
 
 })
+
+
+
+
+
+
+// Example: Watching camera & mic
+
+
+// Example functions to toggle CSS/icon
+function updateCameraIcon(state) {
+  vidIcon.className = state === 'granted' ? "fas fa-video" : "fas fa-video-slash";
+}
+
+function updateMicIcon(state) {
+  audIcon.className = state === 'granted' ? "fas fa-microphone" : "fas fa-microphone-slash";
+}
