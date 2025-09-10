@@ -12,6 +12,7 @@ const socketListEle = document.getElementById('socketList');
 const videoContainer = document.getElementById("videoContainer");
 const toggleAudio = document.getElementById("toggle-audio")
 const toggleVideo = document.getElementById("toggle-video")
+const recordBtn = document.getElementById("recordBtn")
 
 const audIcon = document.getElementById("audio-icon");
 const vidIcon = document.getElementById("video-icon");
@@ -76,7 +77,7 @@ async function watchPermission(name, callback) {
 window.onload = async () => {
   try {
 
-    watchPermission("camera",updateCameraIcon);
+    watchPermission("camera", updateCameraIcon);
 
     watchPermission("microphone", (state) => {
       console.log("Mic permission:", state);
@@ -103,6 +104,37 @@ window.onload = async () => {
     }
   }
 }
+
+// window.addEventListener('DOMContentLoaded', async () => {
+//   try {
+
+//     watchPermission("camera", updateCameraIcon);
+
+//     watchPermission("microphone", (state) => {
+//       console.log("Mic permission:", state);
+//       updateMicIcon(state);
+//     });
+
+//     localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+//     localVideo.srcObject = localStream
+//     localVideo.play()
+
+
+
+//   } catch (err) {
+//     console.error("Media access failed:", err);
+
+//     if (err.name === 'NotAllowedError') {
+//       alert("⚠️ Camera and microphone access was denied. Please allow permissions and try again.");
+//     } else if (err.name === 'NotFoundError') {
+//       alert("❌ No camera or microphone found on this device.");
+//     } else if (err.name === 'NotReadableError') {
+//       alert("🛑 Camera/mic is already in use by another app.");
+//     } else {
+//       alert("🚫 Unable to access camera/mic. Please check your settings and try again.");
+//     }
+//   }
+// })
 
 const createPeerConnection = async () => {
   if (myPC) {
@@ -329,3 +361,21 @@ function updateCameraIcon(state) {
 function updateMicIcon(state) {
   audIcon.className = state === 'granted' ? "fas fa-microphone" : "fas fa-microphone-slash";
 }
+
+
+
+
+// recording eventlistener
+
+recordBtn.addEventListener('click', async () => {
+  if (recordBtn.innerText === "RECORD") {
+    console.log("Recording strarting......");
+    const { handleRecording } = await import('./webspeech.js');
+    handleRecording();
+    recordBtn.innerText = "End Recording";
+  } else if (recordBtn.innerText === "End Recording") {
+    const { handleStopRecording } = await import('./webspeech.js');
+    handleStopRecording();
+    recordBtn.innerText = "RECORD"
+  }
+})
