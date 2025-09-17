@@ -3,6 +3,7 @@ import { createServer } from 'http'
 import { dirname, join } from 'path'
 import { fileURLToPath } from 'url'
 import { Server } from 'socket.io';
+import { HuggingFaceSummarizer } from './summarizer.js'
 const app = express();
 const server = createServer(app)
 
@@ -65,6 +66,17 @@ io.on('connection', (socket) => {
   })
 
 });
+
+
+app.post('/summarizer', async (req, res) => {
+
+  const { text } = req.body;
+  const summarizer = new HuggingFaceSummarizer(process.env.HF_TOKEN);
+  const summarizedText = await summarizer.summarize(text);
+
+  //call the class for summarization
+
+})
 
 
 server.listen('3000', () => {
