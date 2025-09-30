@@ -17,7 +17,13 @@ class HuggingFaceSummarizer {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify(payload)
-    })
+    });
+    const data = response.json()
+    return res.status(200)
+      .json({
+        status: 200,
+        data
+      })
   }
 
   static getUrl() {
