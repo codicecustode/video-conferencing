@@ -4,10 +4,16 @@ import { dirname, join } from 'path'
 import { fileURLToPath } from 'url'
 import { Server } from 'socket.io';
 import { HuggingFaceSummarizer } from './summarizer.js'
+import fs from 'fs';
+import OpenAI from "openai";
+import multer from 'multer'
+
 const app = express();
 const server = createServer(app)
 
 const io = new Server(server)
+
+const upload = multer();
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
@@ -66,6 +72,30 @@ io.on('connection', (socket) => {
   })
 
 });
+
+
+app.post('/transcript', upload.single('file'), async (req, res) => {
+  try {
+    const openai = new OpenAI();
+    const fileBuffer = req.file.buffer;
+    const path = "temp.webm"
+    fs.writeFileSync(path, fileBuffer);
+    const transcription = await openai.audio.transcriptions.create({
+      file: fs.createReadStream(path),
+      model: "gpt-4o-transcribe",
+    });
+
+    console.log("This is the transcription text-->",transcription.text);
+
+    res.status(200).json({
+      text: transcription.text
+    })
+    fs.unlinkSync(path);
+  } catch (err) {
+    fs.unlinkSync(path);
+    res.status(500).json({ error: err.message });
+  }
+})
 
 
 app.post('/summarizer', async (req, res) => {
