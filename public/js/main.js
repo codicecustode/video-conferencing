@@ -76,7 +76,7 @@ async function watchPermission(name, callback) {
 window.onload = async () => {
   try {
 
-    watchPermission("camera",updateCameraIcon);
+    watchPermission("camera", updateCameraIcon);
 
     watchPermission("microphone", (state) => {
       console.log("Mic permission:", state);
@@ -131,6 +131,10 @@ const createPeerConnection = async () => {
   });
 
   myPC.ontrack = (event) => {
+
+    event.streams[0].getTracks().forEach(track => {
+      remoteStream.addTrack(track);
+    });
 
     console.log("📹 Received remote track:", event.streams);
     if (remoteVideo.srcObject !== event.streams[0]) {
