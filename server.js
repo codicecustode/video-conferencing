@@ -3,6 +3,9 @@ import { createServer } from 'http'
 import { dirname, join } from 'path'
 import { fileURLToPath } from 'url'
 import { Server } from 'socket.io';
+import dotenv from 'dotenv';
+dotenv.config();
+
 const app = express();
 const server = createServer(app)
 
