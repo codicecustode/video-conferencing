@@ -3,11 +3,6 @@ import { createServer } from 'http'
 import { dirname, join } from 'path'
 import { fileURLToPath } from 'url'
 import { Server } from 'socket.io';
-import { HuggingFaceSummarizer } from './summarizer.js'
-import fs from 'fs';
-import OpenAI from "openai";
-import multer from 'multer'
-
 const app = express();
 const server = createServer(app)
 
