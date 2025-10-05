@@ -410,7 +410,25 @@ recordBtn.addEventListener('click', async () => {
       method: "POST",
       body: formData
     })
-    
+
   }
 });
 
+pauseBtn.addEventListener('click', () => {
+  audioRecorder.pauseRecording();
+
+  //after clicking pause button dissappear it 
+  pauseBtn.style.display = 'none';
+
+   // let the pause button dissappear and resume button show
+  resumeBtn.style.display = 'inline-block';
+})
+resumeBtn.addEventListener('click', () => {
+  audioRecorder.resumeRecording();
+
+  //after clicking resume button dissappear it 
+  resumeBtn.style.display = 'none';
+
+  // let the resume button dissappear and pause button show
+  pauseBtn.style.display = 'inline-block';
+})
