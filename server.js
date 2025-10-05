@@ -75,11 +75,12 @@ io.on('connection', (socket) => {
 
 
 app.post('/transcript', upload.single('audioFile'), async (req, res) => {
+  const path = "temp.webm"
   try {
     console.log("[Endpoint transcript hit]")
     const openai = new OpenAI();
     const fileBuffer = req.file.buffer;
-    const path = "temp.webm"
+
     fs.writeFileSync(path, fileBuffer);
     const transcription = await openai.audio.transcriptions.create({
       file: fs.createReadStream(path),
@@ -95,6 +96,12 @@ app.post('/transcript', upload.single('audioFile'), async (req, res) => {
   } catch (err) {
     console.log("[ERROR]-->", err)
     res.status(500).json({ error: err.message });
+  } finally {
+    // always try to delete the file
+    fs.unlink(path, (unlinkErr) => {
+      if (unlinkErr) console.log("[UNLINK ERROR]-->", unlinkErr);
+      else console.log("Temp file deleted successfully");
+    });
   }
 })
 
