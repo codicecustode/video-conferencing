@@ -395,10 +395,12 @@ recordBtn.addEventListener('click', async () => {
     audioRecorder = new AudioRecorder();
     audioRecorder.startRecording(combinedStream);
 
+    pauseBtn.style.display = 'inline-block';
     recordBtn.innerText = "End Recording";
   } else if (audioRecorder && recordBtn.innerText === "End Recording") {
     //const { handleStopRecording } = await import('./webspeech.js');
     //handleStopRecording();
+    pauseBtn.style.display = 'none';
     recordBtn.innerText = "RECORD";
     const blob = await audioRecorder.stopRecording();
     const file = new File([blob], 'meetingRecording.webm', { type: 'audio/webm' });
@@ -410,4 +412,5 @@ recordBtn.addEventListener('click', async () => {
     })
     
   }
-})
+});
+
