@@ -33,6 +33,7 @@ export class AudioRecorder {
 
   resumeRecording() {
     if (this.recorder && this.recorder.state === 'paused') {
+      console.log("Recording resumed.")
       this.recorder.resume();
     }
   }
