@@ -1,11 +1,13 @@
 import express from 'express';
+import multer from 'multer';
+import OpenAI from 'openai';
+import fs from 'fs'
+import dotenv from "dotenv";
+dotenv.config();
 import { createServer } from 'http'
 import { dirname, join } from 'path'
 import { fileURLToPath } from 'url'
 import { Server } from 'socket.io';
-import dotenv from 'dotenv';
-dotenv.config();
-
 const app = express();
 const server = createServer(app)
 
@@ -72,8 +74,9 @@ io.on('connection', (socket) => {
 });
 
 
-app.post('/transcript', upload.single('file'), async (req, res) => {
+app.post('/transcript', upload.single('audioFile'), async (req, res) => {
   try {
+    console.log("[Endpoint transcript hit]")
     const openai = new OpenAI();
     const fileBuffer = req.file.buffer;
     const path = "temp.webm"
@@ -83,14 +86,14 @@ app.post('/transcript', upload.single('file'), async (req, res) => {
       model: "gpt-4o-transcribe",
     });
 
-    console.log("This is the transcription text-->",transcription.text);
+    console.log("This is the transcription text-->", transcription.text);
 
     res.status(200).json({
       text: transcription.text
     })
     fs.unlinkSync(path);
   } catch (err) {
-    fs.unlinkSync(path);
+    console.log("[ERROR]-->", err)
     res.status(500).json({ error: err.message });
   }
 })
