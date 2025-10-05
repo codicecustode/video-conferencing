@@ -1,6 +1,6 @@
-
-
 const socket = io()
+
+import { AudioRecorder } from './audioRecorder.js';
 
 const localVideo = document.getElementById('localVideo');
 const remoteVideo = document.getElementById('remoteVideo');
@@ -13,6 +13,8 @@ const videoContainer = document.getElementById("videoContainer");
 const toggleAudio = document.getElementById("toggle-audio")
 const toggleVideo = document.getElementById("toggle-video")
 const recordBtn = document.getElementById("recordBtn")
+const pauseBtn = document.getElementById("pauseBtn")
+const resumeBtn = document.getElementById("resumeBtn")
 
 const audIcon = document.getElementById("audio-icon");
 const vidIcon = document.getElementById("video-icon");
@@ -31,7 +33,10 @@ let isYouCaller = false;
 let isAudioMuted = false;
 let isVideoMuted = false;
 
+let audioRecorder = null;
+
 socket.on('connect', () => {
+  console.log("socketID", socket.id)
   localSocketId = socket.id;
   bigVideoFrame = 'remote';
   //mySocketId.textContent = localSocketId;
@@ -163,6 +168,10 @@ const createPeerConnection = async () => {
   });
 
   myPC.ontrack = (event) => {
+
+    if (!remoteStream) {
+      remoteStream = new MediaStream();
+    }
 
     event.streams[0].getTracks().forEach(track => {
       remoteStream.addTrack(track);
@@ -374,12 +383,31 @@ function updateMicIcon(state) {
 recordBtn.addEventListener('click', async () => {
   if (recordBtn.innerText === "RECORD") {
     console.log("Recording strarting......");
-    const { handleRecording } = await import('./webspeech.js');
-    handleRecording();
+
+    //const { handleRecording } = await import('./webspeech.js');
+    //handleRecording(); //this method uses the browser webspeech api for recording
+
+
+    let combinedStream = new MediaStream([
+      ...localStream.getTracks(),
+      ...remoteStream.getTracks()
+    ])
+    audioRecorder = new AudioRecorder();
+    audioRecorder.startRecording(combinedStream);
+
     recordBtn.innerText = "End Recording";
-  } else if (recordBtn.innerText === "End Recording") {
-    const { handleStopRecording } = await import('./webspeech.js');
-    handleStopRecording();
-    recordBtn.innerText = "RECORD"
+  } else if (audioRecorder && recordBtn.innerText === "End Recording") {
+    //const { handleStopRecording } = await import('./webspeech.js');
+    //handleStopRecording();
+    recordBtn.innerText = "RECORD";
+    const blob = await audioRecorder.stopRecording();
+    const file = new File([blob], 'meetingRecording.webm', { type: 'audio/webm' });
+    const formData = new FormData();
+    formData.append("audioFile", file)
+    const response = await fetch("http://localhost:3000/transcript", {
+      method: "POST",
+      body: formData
+    })
+    
   }
 })
