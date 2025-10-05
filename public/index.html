@@ -276,6 +276,44 @@
       text-transform: uppercase;
       letter-spacing: 1px;
     }
+
+    .record-controls {
+      margin-top: 15px;
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+    }
+
+    #pauseBtn,
+    #resumeBtn {
+      padding: 10px 22px;
+      font-size: 14px;
+      font-weight: bold;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      color: white;
+      transition: transform 0.2s ease, background-color 0.3s ease;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    #pauseBtn {
+      background-color: #ff9800;
+    }
+
+    #pauseBtn:hover {
+      background-color: #e68900;
+      transform: scale(1.05);
+    }
+
+    #resumeBtn {
+      background-color: #007bff;
+    }
+
+    #resumeBtn:hover {
+      background-color: #0069d9;
+      transform: scale(1.05);
+    }
   </style>
 </head>
 
@@ -318,6 +356,12 @@
       <span class="record-circle"></span>
       <span class="record-text">Record</span>
     </button>
+
+    <!-- ⏸ Pause & ▶ Resume Buttons -->
+    <div class="record-controls">
+      <button id="pauseBtn" style="display:none;">⏸ Pause</button>
+      <button id="resumeBtn" style="display:none;">▶ Resume</button>
+    </div>
   </main>
 </body>
 
