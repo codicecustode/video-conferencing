@@ -3,6 +3,9 @@ class HuggingFaceSummarizer {
     if (HuggingFaceSummarizer.instance) {
       return HuggingFaceSummarizer.instance
     }
+    if (!token) {
+      throw new Error("API token is required");
+    }
     this.token = token;
     this.model = model;
     HuggingFaceSummarizer.instance = this
@@ -31,6 +34,9 @@ class HuggingFaceSummarizer {
   }
 
   static getUrl() {
+    if (!process.env.HF_URL) {
+      throw new Error("Hugging Face URL is missing in env.")
+    }
     return process.env.HF_URL;
   }
 
