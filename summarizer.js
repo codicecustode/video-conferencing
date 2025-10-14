@@ -1,7 +1,11 @@
 class HuggingFaceSummarizer {
   constructor(token, model = "facebook/bart-large-cnn") {
+    if (HuggingFaceSummarizer.instance) {
+      return HuggingFaceSummarizer.instance
+    }
     this.token = token;
     this.model = model;
+    HuggingFaceSummarizer.instance = this
   }
   async summarize(text) {
     const payload = {
@@ -30,6 +34,9 @@ class HuggingFaceSummarizer {
     return process.env.HF_URL;
   }
 
+  static getInstance(token, model) {
+    return new HuggingFaceSummarizer(token, model)
+  }
 }
 // HuggingFaceSummarizer.prototype.apiKey = null;
 // HuggingFaceSummarizer.prototype.model = null;
