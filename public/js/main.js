@@ -53,35 +53,51 @@ const waitForIceConfig = () =>
     }
 
     // Otherwise, wait for socket event ONCE
-    socket.once("iceConfig", () => {
+    socket.once("iceConfig", (turnConfig) => {
+      configuration = {
+        iceServers: [
+          { urls: "stun:stun.l.google.com:19302" },
+          {
+            urls: `${turnConfig.url}?transport=udp`,
+            username: turnConfig.username,
+            credential: turnConfig.credential,
+          },
+          {
+            urls: `${turnConfig.url}?transport=tcp`,
+            username: turnConfig.username,
+            credential: turnConfig.credential,
+          },
+        ],
+      };
       resolve();
     });
   });
 
+// socket.on("iceConfig", (turnConfig) => {
+//   console.log("RAW turnConfig from server:", turnConfig);
 
-socket.on("iceConfig", (turnConfig) => {
-  // Dynamically add the protected credentials from the server
-  configuration = {
-    iceServers: [
-      // STUN (fallback)
-      { urls: "stun:stun.l.google.com:19302" },
+//   // Dynamically add the protected credentials from the server
+//   configuration = {
+//     iceServers: [
+//       // STUN (fallback)
+//       { urls: "stun:stun.l.google.com:19302" },
 
-      // TURN (UDP)
-      {
-        urls: `${turnConfig.url}?transport=udp`,
-        username: turnConfig.username, // ✅ fixed typo
-        credential: turnConfig.credential,
-      },
+//       // TURN (UDP)
+//       {
+//         urls: `${turnConfig.url}?transport=udp`,
+//         username: turnConfig.username, // ✅ fixed typo
+//         credential: turnConfig.credential,
+//       },
 
-      // TURN (TCP fallback)
-      {
-        urls: `${turnConfig.url}?transport=tcp`,
-        username: turnConfig.username,
-        credential: turnConfig.credential,
-      },
-    ],
-  };
-});
+//       // TURN (TCP fallback)
+//       {
+//         urls: `${turnConfig.url}?transport=tcp`,
+//         username: turnConfig.username,
+//         credential: turnConfig.credential,
+//       },
+//     ],
+//   };
+// });
 
 const addSocketIdToSidebar = (id, isYou) => {
   const li = document.createElement("li");
