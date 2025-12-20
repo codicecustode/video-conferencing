@@ -44,6 +44,21 @@ socket.on("connect", () => {
   //mySocketId.textContent = localSocketId;
 });
 
+const waitForIceConfig = () =>
+  new Promise((resolve) => {
+    // If config already exists, resolve immediately
+    if (configuration) {
+      resolve();
+      return;
+    }
+
+    // Otherwise, wait for socket event ONCE
+    socket.once("iceConfig", () => {
+      resolve();
+    });
+  });
+
+
 socket.on("iceConfig", (turnConfig) => {
   // Dynamically add the protected credentials from the server
   configuration = {
@@ -189,10 +204,9 @@ const createPeerConnection = async () => {
   //     },
   //   ],
   // };
-  if(configuration === null){
-    console.log("configuration for syun sevrer is null")
-    throw new Error("configuration for syun sevrer is null")
-  }
+  // WAIT here until ICE config is ready
+  await waitForIceConfig();
+
   myPC = new RTCPeerConnection(configuration);
 
   localStream.getTracks().forEach((track) => {
