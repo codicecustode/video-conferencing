@@ -36,7 +36,7 @@ let isVideoMuted = false;
 let audioRecorder = null;
 
 let configuration = null;
-
+let turnConfig = null
 socket.on("connect", () => {
   console.log("socketID", socket.id);
   localSocketId = socket.id;
@@ -46,6 +46,8 @@ socket.on("connect", () => {
 
 socket.on("iceConfig", (turnConfig) => {
   console.log("📥 iceConfig received:", turnConfig);
+
+  turnConfig = turnConfig
 
   configuration = {
     iceServers: [
@@ -71,7 +73,22 @@ const waitForIceConfig = () => new Promise((resolve, reject)=>{
   if(configuration){
     resolve()
   }
-  reject("Unable to setup the configuration")
+   configuration = {
+    iceServers: [
+      { urls: "stun:stun.l.google.com:19302" },
+      {
+        urls: `${turnConfig.url}?transport=udp`,
+        username: turnConfig.username,
+        credential: turnConfig.credential,
+      },
+      {
+        urls: `${turnConfig.url}?transport=tcp`,
+        username: turnConfig.username,
+        credential: turnConfig.credential,
+      },
+    ],
+  };
+  resolve()
 })
   
   
