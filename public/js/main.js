@@ -248,7 +248,7 @@ const createPeerConnection = async () => {
     console.log("waiting coturn config");
     await waitForIceConfig();
 
-    console.log("crete new rtc connection");
+    console.log("crete new rtc connection",configuration);
     myPC = new RTCPeerConnection(configuration);
     console.log("crete new rtc connection");
 
