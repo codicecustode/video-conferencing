@@ -44,34 +44,37 @@ socket.on("connect", () => {
   //mySocketId.textContent = localSocketId;
 });
 
-const waitForIceConfig = () =>
-  new Promise((resolve) => {
-    // If config already exists, resolve immediately
-    if (configuration) {
-      resolve();
-      return;
-    }
+socket.on("iceConfig", (turnConfig) => {
+  console.log("📥 iceConfig received:", turnConfig);
 
-    // Otherwise, wait for socket event ONCE
-    socket.once("iceConfig", (turnConfig) => {
-      configuration = {
-        iceServers: [
-          { urls: "stun:stun.l.google.com:19302" },
-          {
-            urls: `${turnConfig.url}?transport=udp`,
-            username: turnConfig.username,
-            credential: turnConfig.credential,
-          },
-          {
-            urls: `${turnConfig.url}?transport=tcp`,
-            username: turnConfig.username,
-            credential: turnConfig.credential,
-          },
-        ],
-      };
-      resolve();
-    });
-  });
+  configuration = {
+    iceServers: [
+      { urls: "stun:stun.l.google.com:19302" },
+      {
+        urls: `${turnConfig.url}?transport=udp`,
+        username: turnConfig.username,
+        credential: turnConfig.credential,
+      },
+      {
+        urls: `${turnConfig.url}?transport=tcp`,
+        username: turnConfig.username,
+        credential: turnConfig.credential,
+      },
+    ],
+  };
+
+  
+});
+
+
+const waitForIceConfig = () => new Promise((resolve, reject)=>{
+  if(configuration){
+    resolve()
+  }
+  reject("Unable to setup the configuration")
+})
+  
+  
 
 // socket.on("iceConfig", (turnConfig) => {
 //   console.log("RAW turnConfig from server:", turnConfig);
@@ -221,13 +224,20 @@ const createPeerConnection = async () => {
   //   ],
   // };
   // WAIT here until ICE config is ready
-  await waitForIceConfig();
+  try {
+    console.log("waiting coturn config");
+    await waitForIceConfig();
 
-  myPC = new RTCPeerConnection(configuration);
+    console.log("crete new rtc connection");
+    myPC = new RTCPeerConnection(configuration);
+    console.log("crete new rtc connection");
 
-  localStream.getTracks().forEach((track) => {
-    myPC.addTrack(track, localStream);
-  });
+    localStream.getTracks().forEach((track) => {
+      myPC.addTrack(track, localStream);
+    });
+  } catch (e) {
+    console.log("eeee-->>", e);
+  }
 
   myPC.ontrack = (event) => {
     if (!remoteStream) {
