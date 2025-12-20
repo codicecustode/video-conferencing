@@ -35,11 +35,18 @@ let isVideoMuted = false;
 
 let audioRecorder = null;
 
+let turnConfig = null
+
 socket.on('connect', () => {
   console.log("socketID", socket.id)
   localSocketId = socket.id;
   bigVideoFrame = 'remote';
   //mySocketId.textContent = localSocketId;
+});
+
+socket.on('iceConfig', (turnConfig) => {
+    // Dynamically add the protected credentials from the server
+    turnConfig = turnConfig;
 });
 
 const addSocketIdToSidebar = (id, isYou) => {
@@ -147,20 +154,22 @@ const createPeerConnection = async () => {
   }
 
   const configuration = {
-    iceServers: [
-      { urls: 'stun:stun.l.google.com:19302' },
-      {
-        urls: 'turn:openrelay.metered.ca:80',
-        username: 'openrelayproject',
-        credential: 'openrelayproject'
-      },
-      {
-        urls: 'turn:34.61.244.182:3478?transport=udp',
-        username: 'testuser',
-        credential: 'testpass'
-      }
-    ]
-  };
+  iceServers: [
+    { urls: 'stun:stun.l.google.com:19302' }, // Keep Google's STUN as a backup
+    {
+     
+      urls: `${turnConfig.url}?transport=udp`, 
+      username: `${turnConfig.useranme}`,      // The --user you set in Docker
+      credential: `${turnConfig.credential}` // The password you set in Docker
+    },
+    {
+      // best practice to also provide a TCP fallback
+      urls: `${turnConfig.url}?transport=tcp`,
+      username: `${turnConfig.username}`,
+      credential: `${turnConfig.credential}`
+    }
+  ]
+};
   myPC = new RTCPeerConnection(configuration);
 
   localStream.getTracks().forEach((track) => {

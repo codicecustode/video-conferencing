@@ -17,6 +17,12 @@ const upload = multer();
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
+const turnConfig = {
+    urls: process.env.TURN_URL,
+    username: process.env.TURN_USERNAME,
+    credential: process.env.TURN_PASSWORD
+};
+
 app.use(express.static(join(__dirname, 'public')))
 app.get('/', (req, res) => {
   //dirname(fileURLToPath(import.meta.url))
@@ -24,6 +30,8 @@ app.get('/', (req, res) => {
 })
 
 io.on('connection', (socket) => {
+
+  socket.emit('iceConfig', turnConfig);
 
   io.emit('socket-list', Array.from(io.sockets.sockets.keys()))
 
