@@ -1,20 +1,20 @@
-const socket = io()
+const socket = io();
 
-import { AudioRecorder } from './audioRecorder.js';
+import { AudioRecorder } from "./audioRecorder.js";
 
-const localVideo = document.getElementById('localVideo');
-const remoteVideo = document.getElementById('remoteVideo');
-const status = document.getElementById('status');
-const callBtn = document.getElementById('callBtn');
-const targetSocketId = document.getElementById('targetSocketId');
-const endCallBtn = document.getElementById('endCallBtn');
-const socketListEle = document.getElementById('socketList');
+const localVideo = document.getElementById("localVideo");
+const remoteVideo = document.getElementById("remoteVideo");
+const status = document.getElementById("status");
+const callBtn = document.getElementById("callBtn");
+const targetSocketId = document.getElementById("targetSocketId");
+const endCallBtn = document.getElementById("endCallBtn");
+const socketListEle = document.getElementById("socketList");
 const videoContainer = document.getElementById("videoContainer");
-const toggleAudio = document.getElementById("toggle-audio")
-const toggleVideo = document.getElementById("toggle-video")
-const recordBtn = document.getElementById("recordBtn")
-const pauseBtn = document.getElementById("pauseBtn")
-const resumeBtn = document.getElementById("resumeBtn")
+const toggleAudio = document.getElementById("toggle-audio");
+const toggleVideo = document.getElementById("toggle-video");
+const recordBtn = document.getElementById("recordBtn");
+const pauseBtn = document.getElementById("pauseBtn");
+const resumeBtn = document.getElementById("resumeBtn");
 
 const audIcon = document.getElementById("audio-icon");
 const vidIcon = document.getElementById("video-icon");
@@ -35,29 +35,48 @@ let isVideoMuted = false;
 
 let audioRecorder = null;
 
-let turnConfig = null
+let configuration = null;
 
-socket.on('connect', () => {
-  console.log("socketID", socket.id)
+socket.on("connect", () => {
+  console.log("socketID", socket.id);
   localSocketId = socket.id;
-  bigVideoFrame = 'remote';
+  bigVideoFrame = "remote";
   //mySocketId.textContent = localSocketId;
 });
 
-socket.on('iceConfig', (turnConfig) => {
-    // Dynamically add the protected credentials from the server
-    turnConfig = turnConfig;
+socket.on("iceConfig", (turnConfig) => {
+  // Dynamically add the protected credentials from the server
+  configuration = {
+    iceServers: [
+      // STUN (fallback)
+      { urls: "stun:stun.l.google.com:19302" },
+
+      // TURN (UDP)
+      {
+        urls: `${turnConfig.url}?transport=udp`,
+        username: turnConfig.username, // ✅ fixed typo
+        credential: turnConfig.credential,
+      },
+
+      // TURN (TCP fallback)
+      {
+        urls: `${turnConfig.url}?transport=tcp`,
+        username: turnConfig.username,
+        credential: turnConfig.credential,
+      },
+    ],
+  };
 });
 
 const addSocketIdToSidebar = (id, isYou) => {
-  const li = document.createElement('li')
+  const li = document.createElement("li");
   li.innerHTML = isYou ? `<span>YOU</span>(${id})` : id;
-  socketListEle.appendChild(li)
-}
+  socketListEle.appendChild(li);
+};
 
 const disconnectCall = async () => {
   if (localStream) {
-    localStream.getTracks().forEach(track => track.stop())
+    localStream.getTracks().forEach((track) => track.stop());
     localStream = null;
   }
 
@@ -68,7 +87,7 @@ const disconnectCall = async () => {
 
   remoteVideo.srcObject = null;
   localVideo.srcObject = null;
-}
+};
 
 async function watchPermission(name, callback) {
   try {
@@ -88,7 +107,6 @@ async function watchPermission(name, callback) {
 
 window.onload = async () => {
   try {
-
     watchPermission("camera", updateCameraIcon);
 
     watchPermission("microphone", (state) => {
@@ -96,26 +114,30 @@ window.onload = async () => {
       updateMicIcon(state);
     });
 
-    localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true })
-    localVideo.srcObject = localStream
-    localVideo.play()
-
-
-
+    localStream = await navigator.mediaDevices.getUserMedia({
+      video: true,
+      audio: true,
+    });
+    localVideo.srcObject = localStream;
+    localVideo.play();
   } catch (err) {
     console.error("Media access failed:", err);
 
-    if (err.name === 'NotAllowedError') {
-      alert("⚠️ Camera and microphone access was denied. Please allow permissions and try again.");
-    } else if (err.name === 'NotFoundError') {
+    if (err.name === "NotAllowedError") {
+      alert(
+        "⚠️ Camera and microphone access was denied. Please allow permissions and try again."
+      );
+    } else if (err.name === "NotFoundError") {
       alert("❌ No camera or microphone found on this device.");
-    } else if (err.name === 'NotReadableError') {
+    } else if (err.name === "NotReadableError") {
       alert("🛑 Camera/mic is already in use by another app.");
     } else {
-      alert("🚫 Unable to access camera/mic. Please check your settings and try again.");
+      alert(
+        "🚫 Unable to access camera/mic. Please check your settings and try again."
+      );
     }
   }
-}
+};
 
 // window.addEventListener('DOMContentLoaded', async () => {
 //   try {
@@ -130,8 +152,6 @@ window.onload = async () => {
 //     localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true })
 //     localVideo.srcObject = localStream
 //     localVideo.play()
-
-
 
 //   } catch (err) {
 //     console.error("Media access failed:", err);
@@ -150,26 +170,29 @@ window.onload = async () => {
 
 const createPeerConnection = async () => {
   if (myPC) {
-    return myPC
+    return myPC;
   }
 
-  const configuration = {
-  iceServers: [
-    { urls: 'stun:stun.l.google.com:19302' }, // Keep Google's STUN as a backup
-    {
-     
-      urls: `${turnConfig.url}?transport=udp`, 
-      username: `${turnConfig.useranme}`,      // The --user you set in Docker
-      credential: `${turnConfig.credential}` // The password you set in Docker
-    },
-    {
-      // best practice to also provide a TCP fallback
-      urls: `${turnConfig.url}?transport=tcp`,
-      username: `${turnConfig.username}`,
-      credential: `${turnConfig.credential}`
-    }
-  ]
-};
+  // const configuration = {
+  //   iceServers: [
+  //     { urls: "stun:stun.l.google.com:19302" }, // Keep Google's STUN as a backup
+  //     {
+  //       urls: `${turnConfig.url}?transport=udp`,
+  //       username: `${turnConfig.useranme}`, // The --user you set in Docker
+  //       credential: `${turnConfig.credential}`, // The password you set in Docker
+  //     },
+  //     {
+  //       // best practice to also provide a TCP fallback
+  //       urls: `${turnConfig.url}?transport=tcp`,
+  //       username: `${turnConfig.username}`,
+  //       credential: `${turnConfig.credential}`,
+  //     },
+  //   ],
+  // };
+  if(configuration === null){
+    console.log("configuration for syun sevrer is null")
+    throw new Error("configuration for syun sevrer is null")
+  }
   myPC = new RTCPeerConnection(configuration);
 
   localStream.getTracks().forEach((track) => {
@@ -177,12 +200,11 @@ const createPeerConnection = async () => {
   });
 
   myPC.ontrack = (event) => {
-
     if (!remoteStream) {
       remoteStream = new MediaStream();
     }
 
-    event.streams[0].getTracks().forEach(track => {
+    event.streams[0].getTracks().forEach((track) => {
       remoteStream.addTrack(track);
     });
 
@@ -190,86 +212,86 @@ const createPeerConnection = async () => {
     if (remoteVideo.srcObject !== event.streams[0]) {
       remoteVideo.srcObject = event.streams[0];
       remoteVideo.onloadedmetadata = async () => {
-        await remoteVideo.play()
+        await remoteVideo.play();
       };
     }
-  }
-
-
+  };
 
   myPC.onconnectionstatechange = (event) => {
     console.log("here is the connection state ---->", myPC.connectionState);
     if (myPC.connectionState === "connected") {
       console.log("adding the class");
-      videoContainer.classList.add('call-active');
+      videoContainer.classList.add("call-active");
     }
   };
 
   myPC.oniceconnectionstatechange = (ev) => {
-    console.log("ICE Connection State changed to:", myPC.iceConnectionState)
+    console.log("ICE Connection State changed to:", myPC.iceConnectionState);
   };
 
   myPC.onicecandidate = (event) => {
     if (event.candidate) {
-      socket.emit('ice-candidate', {
+      socket.emit("ice-candidate", {
         from: localSocketId,
         to: peerSocketId,
-        candidate: event.candidate
+        candidate: event.candidate,
       });
     }
   };
-  return myPC
-}
-
+  return myPC;
+};
 
 const makeOffer = async () => {
-  console.log("creating offer")
-  myPC = await createPeerConnection()
+  try {
+    console.log("creating offer");
+    myPC = await createPeerConnection();
+    console.log("test");
+  } catch (e) {
+    console.log("e-->", e);
+  }
 
-  const offer = await myPC.createOffer()
-  await myPC.setLocalDescription(offer)
+  const offer = await myPC.createOffer();
+  await myPC.setLocalDescription(offer);
 
-  socket.emit('offer', {
+  socket.emit("offer", {
     from: localSocketId,
     to: peerSocketId,
-    offer: offer
+    offer: offer,
   });
+};
 
-}
+socket.on("offer", async (data) => {
+  myPC = await createPeerConnection();
 
-
-socket.on('offer', async (data) => {
-
-  myPC = await createPeerConnection()
+  console.log("offer received");
 
   if (!isYouCaller) {
     peerSocketId = data.from;
   }
 
-  await myPC.setRemoteDescription(new RTCSessionDescription(data.offer))
+  await myPC.setRemoteDescription(new RTCSessionDescription(data.offer));
 
-  const answer = await myPC.createAnswer()
-  await myPC.setLocalDescription(answer)
+  const answer = await myPC.createAnswer();
+  await myPC.setLocalDescription(answer);
 
-  console.log("answer is----->", answer)
+  console.log("answer is----->", answer);
 
-  socket.emit('answer', {
+  socket.emit("answer", {
     from: localSocketId,
     to: peerSocketId,
-    answer
-  })
+    answer,
+  });
+});
 
-})
-
-socket.on('answer', async (data) => {
+socket.on("answer", async (data) => {
   if (!data.answer || !data.answer.type || !data.answer.sdp) {
     console.error("Invalid answer received:", data.answer);
     return;
   }
-  await myPC.setRemoteDescription(new RTCSessionDescription(data.answer))
-})
+  await myPC.setRemoteDescription(new RTCSessionDescription(data.answer));
+});
 
-socket.on('ice-candidate', async (data) => {
+socket.on("ice-candidate", async (data) => {
   if (!data.candidate) return;
 
   if (!myPC) {
@@ -285,159 +307,147 @@ socket.on('ice-candidate', async (data) => {
   }
 });
 
-
-
-socket.on('socket-list', (socketIds) => {
-  console.log('Received socket list:', socketIds);
-  socketListEle.innerHTML = ''
+socket.on("socket-list", (socketIds) => {
+  console.log("Received socket list:", socketIds);
+  socketListEle.innerHTML = "";
   socketIds.forEach((id) => {
-    addSocketIdToSidebar(id, id === socket.id)
-  })
-})
+    addSocketIdToSidebar(id, id === socket.id);
+  });
+});
 
-socket.on('hang-up', (data) => {
-  endCallBtn.style.display = 'none';
-  callBtn.style.display = 'inline-block'
-  alert(data.msg)
-})
+socket.on("hang-up", (data) => {
+  endCallBtn.style.display = "none";
+  callBtn.style.display = "inline-block";
+  alert(data.msg);
+});
 
-
-
-callBtn.addEventListener('click', async (e) => {
-  const inputValue = document.getElementById('targetSocketId').value.trim()
+callBtn.addEventListener("click", async (e) => {
+  const inputValue = document.getElementById("targetSocketId").value.trim();
   if (inputValue === "") {
-    alert('Please enter the socket id for calling.')
-    return
+    alert("Please enter the socket id for calling.");
+    return;
   }
   isYouCaller = true;
-  peerSocketId = targetSocketId.value
-  endCallBtn.style.display = 'inline-block'
-  callBtn.style.display = 'none'
-  makeOffer()
-})
+  peerSocketId = targetSocketId.value;
+  endCallBtn.style.display = "inline-block";
+  callBtn.style.display = "none";
 
-endCallBtn.addEventListener('click', async () => {
-  endCallBtn.style.display = 'none';
-  callBtn.style.display = 'inline-block'
+  makeOffer();
+});
+
+endCallBtn.addEventListener("click", async () => {
+  endCallBtn.style.display = "none";
+  callBtn.style.display = "inline-block";
   disconnectCall();
   //notify the other end that call has beed disconnected
-  socket.emit('hang-up', {
+  socket.emit("hang-up", {
     from: localSocketId,
-    to: peerSocketId
-  })
+    to: peerSocketId,
+  });
+});
 
-})
-
-localVideo.addEventListener('click', async () => {
-  if (bigVideoFrame === 'local') {
+localVideo.addEventListener("click", async () => {
+  if (bigVideoFrame === "local") {
     //do nothing
   } else {
     //swap
-    videoContainer.classList.toggle('toggle-swapped')
-    bigVideoFrame = 'local'
+    videoContainer.classList.toggle("toggle-swapped");
+    bigVideoFrame = "local";
   }
+});
 
-})
-
-remoteVideo.addEventListener('click', async () => {
-  if (bigVideoFrame === 'remote') {
+remoteVideo.addEventListener("click", async () => {
+  if (bigVideoFrame === "remote") {
     //do nothing
   } else {
     //swap
-    videoContainer.classList.toggle('toggle-swapped')
-    bigVideoFrame = 'remote'
+    videoContainer.classList.toggle("toggle-swapped");
+    bigVideoFrame = "remote";
   }
-})
+});
 
+toggleAudio.addEventListener("click", async () => {
+  isAudioMuted = !isAudioMuted;
 
-toggleAudio.addEventListener('click', async () => {
-  isAudioMuted = !isAudioMuted
-
-  audIcon.className = isAudioMuted ? "fas fa-microphone-slash" : "fas fa-microphone";
+  audIcon.className = isAudioMuted
+    ? "fas fa-microphone-slash"
+    : "fas fa-microphone";
   const audioTrack = localStream.getAudioTracks()[0];
-  audioTrack.enabled = !audioTrack.enabled
-})
+  audioTrack.enabled = !audioTrack.enabled;
+});
 
-toggleVideo.addEventListener('click', async () => {
+toggleVideo.addEventListener("click", async () => {
   isVideoMuted = !isVideoMuted;
 
   vidIcon.className = isVideoMuted ? "fas fa-video-slash" : "fas fa-video";
   const videoTrack = localStream.getVideoTracks()[0];
-  videoTrack.enabled = !videoTrack.enabled
-
-})
-
-
-
-
-
+  videoTrack.enabled = !videoTrack.enabled;
+});
 
 // Example: Watching camera & mic
 
-
 // Example functions to toggle CSS/icon
 function updateCameraIcon(state) {
-  vidIcon.className = state === 'granted' ? "fas fa-video" : "fas fa-video-slash";
+  vidIcon.className =
+    state === "granted" ? "fas fa-video" : "fas fa-video-slash";
 }
 
 function updateMicIcon(state) {
-  audIcon.className = state === 'granted' ? "fas fa-microphone" : "fas fa-microphone-slash";
+  audIcon.className =
+    state === "granted" ? "fas fa-microphone" : "fas fa-microphone-slash";
 }
-
-
-
 
 // recording eventlistener
 
-recordBtn.addEventListener('click', async () => {
+recordBtn.addEventListener("click", async () => {
   if (recordBtn.innerText === "RECORD") {
     console.log("Recording strarting......");
 
     //const { handleRecording } = await import('./webspeech.js');
     //handleRecording(); //this method uses the browser webspeech api for recording
 
-
     let combinedStream = new MediaStream([
       ...localStream.getTracks(),
-      ...remoteStream.getTracks()
-    ])
+      ...remoteStream.getTracks(),
+    ]);
     audioRecorder = new AudioRecorder();
     audioRecorder.startRecording(combinedStream);
 
-    pauseBtn.style.display = 'inline-block';
+    pauseBtn.style.display = "inline-block";
     recordBtn.innerText = "End Recording";
   } else if (audioRecorder && recordBtn.innerText === "End Recording") {
     //const { handleStopRecording } = await import('./webspeech.js');
     //handleStopRecording();
-    pauseBtn.style.display = 'none';
+    pauseBtn.style.display = "none";
     recordBtn.innerText = "RECORD";
     const blob = await audioRecorder.stopRecording();
-    const file = new File([blob], 'meetingRecording.webm', { type: 'audio/webm' });
+    const file = new File([blob], "meetingRecording.webm", {
+      type: "audio/webm",
+    });
     const formData = new FormData();
-    formData.append("audioFile", file)
+    formData.append("audioFile", file);
     const response = await fetch("http://localhost:3000/transcript", {
       method: "POST",
-      body: formData
-    })
-
+      body: formData,
+    });
   }
 });
 
-pauseBtn.addEventListener('click', () => {
+pauseBtn.addEventListener("click", () => {
   audioRecorder.pauseRecording();
 
-  //after clicking pause button dissappear it 
-  pauseBtn.style.display = 'none';
+  //after clicking pause button dissappear it
+  pauseBtn.style.display = "none";
 
-   // let the pause button dissappear and resume button show
-  resumeBtn.style.display = 'inline-block';
-})
-resumeBtn.addEventListener('click', () => {
+  // let the pause button dissappear and resume button show
+  resumeBtn.style.display = "inline-block";
+});
+resumeBtn.addEventListener("click", () => {
   audioRecorder.resumeRecording();
 
-  //after clicking resume button dissappear it 
-  resumeBtn.style.display = 'none';
+  //after clicking resume button dissappear it
+  resumeBtn.style.display = "none";
 
   // let the resume button dissappear and pause button show
-  pauseBtn.style.display = 'inline-block';
-})
+  pauseBtn.style.display = "inline-block";
+});

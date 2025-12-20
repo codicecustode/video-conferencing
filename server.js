@@ -18,7 +18,7 @@ const upload = multer();
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
 const turnConfig = {
-    urls: process.env.TURN_URL,
+    url: process.env.TURN_URL,
     username: process.env.TURN_USERNAME,
     credential: process.env.TURN_PASSWORD
 };
