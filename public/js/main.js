@@ -37,6 +37,9 @@ let audioRecorder = null;
 
 let configuration = null;
 let turnConfig = null
+setInterval(() => {
+  console.log("configuration:", configuration, "time:", new Date().toLocaleTimeString());
+}, 2000);
 socket.on("connect", () => {
   console.log("socketID", socket.id);
   localSocketId = socket.id;
